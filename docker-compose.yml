@@ -1,0 +1,32 @@
+# =====================================================================
+# GymManager · Entorno de desarrollo local reproducible
+#
+#   docker compose up -d          # levanta PostgreSQL 16
+#   cd backend && npm run migrate && npm run seed && npm run dev
+#   cd frontend && npm run dev    # http://localhost:5173
+#
+# Solo para desarrollo: en el VPS PostgreSQL se instala nativo (ver
+# deploy/scripts/provision.sh) y nunca se expone a Internet.
+# =====================================================================
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gym-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: localpg
+      POSTGRES_DB: gymdb
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - datos_postgres:/var/lib/postgresql/data
+      - ./deploy/docker/init-roles.sql:/docker-entrypoint-initdb.d/10-roles.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d gymdb']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  datos_postgres:

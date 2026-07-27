@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+
+# Artefactos de compilación
+dist/
+build/
+*.tsbuildinfo
+
+# Variables de entorno y secretos (NUNCA versionar)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Logs y respaldos
+*.log
+npm-debug.log*
+*.dump
+*.sql.gz
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
