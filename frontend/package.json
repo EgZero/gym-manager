@@ -1,0 +1,30 @@
+{
+  "name": "gym-manager-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SPA de GymManager (React + Vite + TypeScript)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "typecheck": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.0"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
+    "@vitejs/plugin-react": "4.3.3",
+    "eslint": "8.57.1",
+    "eslint-plugin-react-hooks": "4.6.2",
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  }
+}

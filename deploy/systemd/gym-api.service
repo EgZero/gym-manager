@@ -1,0 +1,51 @@
+# =====================================================================
+# GymManager · Servidor de aplicaciones (Node.js) como servicio systemd
+# Destino: /etc/systemd/system/gym-api.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now gym-api
+# =====================================================================
+[Unit]
+Description=GymManager API (Node.js + Express)
+Documentation=https://github.com/EgZero/gym-manager
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=gymapp
+Group=gymapp
+WorkingDirectory=/var/www/gym-manager/backend
+EnvironmentFile=/etc/gym-manager/api.env
+ExecStart=/usr/bin/node dist/server.js
+
+Restart=always
+RestartSec=5
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+# --- Endurecimiento del servicio (RNF-05) ---------------------------
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+ReadWritePaths=/var/log/gym-manager
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# --- Logs ------------------------------------------------------------
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gym-api
+
+[Install]
+WantedBy=multi-user.target

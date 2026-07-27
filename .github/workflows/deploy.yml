@@ -1,0 +1,122 @@
+name: Deploy a VPS
+
+# Todo push a main que pase CI se despliega automáticamente en el VPS.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-produccion
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: Integración continua
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Despliegue continuo
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: produccion
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # --- Build de los artefactos --------------------------------------
+      - name: Compilar el backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build
+          # Solo dependencias de producción para el paquete que viaja al VPS
+          npm prune --omit=dev
+
+      - name: Compilar la SPA
+        working-directory: frontend
+        env:
+          VITE_API_URL: ''
+        run: |
+          npm ci
+          npm run build
+
+      - name: Preparar el paquete de despliegue
+        run: |
+          mkdir -p paquete/backend paquete/frontend
+          cp -r backend/dist backend/node_modules backend/package.json backend/package-lock.json paquete/backend/
+          cp -r backend/db paquete/backend/db
+          mkdir -p paquete/backend/deploy
+          cp deploy/scripts/post-deploy.sh paquete/backend/deploy/
+          chmod +x paquete/backend/deploy/post-deploy.sh
+          cp -r frontend/dist/* paquete/frontend/
+          echo "${GITHUB_SHA}" > paquete/backend/VERSION
+          echo "${GITHUB_SHA}" > paquete/frontend/VERSION
+
+      # --- Conexión SSH ---------------------------------------------------
+      - name: Configurar la clave SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p "${VPS_PORT:-22}" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      # --- Sincronización de archivos ------------------------------------
+      - name: Sincronizar el backend (rsync)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_deploy -p ${VPS_PORT:-22} -o StrictHostKeyChecking=yes" \
+            paquete/backend/ "${VPS_USER}@${VPS_HOST}:/var/www/gym-manager/backend/"
+
+      - name: Sincronizar la SPA (rsync)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_deploy -p ${VPS_PORT:-22} -o StrictHostKeyChecking=yes" \
+            paquete/frontend/ "${VPS_USER}@${VPS_HOST}:/var/www/gym-manager/frontend/"
+
+      # --- Migraciones, reinicio y verificación ---------------------------
+      - name: Migrar, reiniciar y verificar (con rollback automático)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "${VPS_PORT:-22}" -o StrictHostKeyChecking=yes \
+            "${VPS_USER}@${VPS_HOST}" \
+            "APP_VERSION=${GITHUB_SHA} bash /var/www/gym-manager/backend/deploy/post-deploy.sh"
+
+      - name: Verificación pública del despliegue
+        if: ${{ vars.URL_PUBLICA != '' }}
+        run: |
+          curl -fsS --retry 5 --retry-delay 3 "${{ vars.URL_PUBLICA }}/api/health"
+
+      - name: Resumen del despliegue
+        if: always()
+        run: |
+          {
+            echo "### Despliegue en el VPS"
+            echo ""
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Estado: ${{ job.status }}"
+            echo "- Disparado por: @${GITHUB_ACTOR}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Limpiar credenciales
+        if: always()
+        run: rm -f ~/.ssh/id_deploy
