@@ -1,6 +1,8 @@
 :root {
-  --fondo: #0f172a;
-  --panel: #1e293b;
+  --fondo: #dbdad5;
+  /* --fondo: #0f172a; */
+  /* --panel: #1e293b; */
+  --panel: #9ca4af;
   --panel-claro: #273449;
   --borde: #334155;
   --texto: #e2e8f0;
