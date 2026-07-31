@@ -9,14 +9,14 @@ interface Props {
 }
 
 const ENLACES: { ruta: string; texto: string; soloAdmin?: boolean }[] = [
-  { ruta: '/tablero', texto: 'Tablero' },
+  // { ruta: '/tablero', texto: 'Tablero' },
   { ruta: '/socios', texto: 'Socios' },
-  { ruta: '/asistencias', texto: 'Asistencias' },
-  { ruta: '/planes', texto: 'Planes y costos' },
-  { ruta: '/promociones', texto: 'Promociones' },
-  { ruta: '/productos', texto: 'Productos canjeables' },
-  { ruta: '/operadores', texto: 'Operadores', soloAdmin: true },
-  { ruta: '/reportes', texto: 'Reportes', soloAdmin: true },
+  // { ruta: '/asistencias', texto: 'Asistencias' },
+  // { ruta: '/planes', texto: 'Planes y costos' },
+  // { ruta: '/promociones', texto: 'Promociones' },
+  // { ruta: '/productos', texto: 'Productos canjeables' },
+  // { ruta: '/operadores', texto: 'Operadores', soloAdmin: true },
+  // { ruta: '/reportes', texto: 'Reportes', soloAdmin: true },
 ];
 
 export function Layout({ usuario, alCerrarSesion, children }: Props): JSX.Element {

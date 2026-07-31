@@ -213,19 +213,6 @@ Lista de comprobación ejecutable en `docs/04-provisionamiento.md §4.5`.
 > y cargando los cuatro secretos en GitHub.
 
 ---
-
-## 8. Relación con la rúbrica de evaluación
-
-| Criterio | Evidencia en este proyecto |
-|---|---|
-| **Infraestructura (4.1)** | Script de provisión idempotente que instala y endurece Nginx, Node 20 y PostgreSQL 16; servicio systemd con aislamiento; PostgreSQL y la API solo en loopback; TLS con Let's Encrypt; usuarios sin privilegios; separación de roles de base de datos. → `deploy/scripts/provision.sh`, `docs/04` |
-| **Despliegue y funcionalidad (4.2 / 4.3)** | CRUD completo de socios, planes, promociones, productos y asistencias desde la SPA; despliegue **automático** en cada push, con migraciones, healthcheck y rollback. → `frontend/src/pages/`, `.github/workflows/deploy.yml` |
-| **Automatización CI/CD** | Pipeline de dos etapas: CI (lint, typecheck, build, migraciones y 21 pruebas contra PostgreSQL real) y CD (build, rsync por SSH, migraciones, reinicio, verificación y rollback). Sin ningún paso manual. → `docs/05` |
-| **Seguridad y mantenimiento (4.4)** | UFW deny-by-default + fail2ban; respaldos diarios **verificados** con retención y script de restauración; logs centralizados, rotados y con auditoría de negocio; calendario de mantenimiento y procedimientos de incidente. → `docs/06` |
-| **Informe técnico** | Seis documentos: requerimientos, base de datos, arquitectura con diagrama de red, bitácora de provisionamiento, pipeline y plan de mantenimiento y seguridad. → `docs/` |
-
----
-
 ## 9. Decisiones de ingeniería destacadas
 
 1. **«Solo postgres crea staff»** se implementó de verdad, no por convención: la función
