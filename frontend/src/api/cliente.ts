@@ -1,6 +1,9 @@
 const BASE = import.meta.env.VITE_API_URL ?? '';
-const CLAVE_TOKEN = 'gym.token';
-const CLAVE_USUARIO = 'gym.usuario';
+
+let estadoSesion: { token: string | null; usuario: UsuarioSesion | null } = {
+  token: null,
+  usuario: null,
+};
 
 export type Rol = 'ADMINISTRADOR' | 'OPERADOR';
 
@@ -23,18 +26,13 @@ export class ApiError extends Error {
 }
 
 export const sesion = {
-  token: (): string | null => localStorage.getItem(CLAVE_TOKEN),
-  usuario: (): UsuarioSesion | null => {
-    const crudo = localStorage.getItem(CLAVE_USUARIO);
-    return crudo ? (JSON.parse(crudo) as UsuarioSesion) : null;
-  },
+  token: (): string | null => estadoSesion.token,
+  usuario: (): UsuarioSesion | null => estadoSesion.usuario,
   guardar: (token: string, usuario: UsuarioSesion): void => {
-    localStorage.setItem(CLAVE_TOKEN, token);
-    localStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+    estadoSesion = { token, usuario };
   },
   limpiar: (): void => {
-    localStorage.removeItem(CLAVE_TOKEN);
-    localStorage.removeItem(CLAVE_USUARIO);
+    estadoSesion = { token: null, usuario: null };
   },
 };
 

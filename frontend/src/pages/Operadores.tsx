@@ -87,13 +87,6 @@ export function Operadores(): JSX.Element {
         Gestión del personal. El administrador edita, activa o desactiva operadores.
       </p>
 
-      <Mensaje
-        tipo="info"
-        texto={
-          'Las cuentas nuevas solo se crean desde PostgreSQL: ' +
-          "psql -U postgres -d gymdb -c \"SELECT gimnasio.crear_staff('usuario','Clave1234','Nombre Completo','OPERADOR');\""
-        }
-      />
       <Mensaje tipo="error" texto={error} />
       <Mensaje tipo="exito" texto={exito} />
 

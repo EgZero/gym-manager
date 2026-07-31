@@ -22,7 +22,12 @@ import { reportesRouter } from './routes/reportes';
 export function crearApp(): Express {
   const app = express();
 
+  app.disable('x-powered-by');
   app.set('trust proxy', 1); // detrás de Nginx
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+  });
   app.use(helmet());
   app.use(
     cors({
